@@ -9,11 +9,14 @@ function Initialize(Plugin)
 	Plugin:SetVersion(1)
 	
 	PluginManager = cRoot:Get():GetPluginManager()
-	PluginManager:BindCommand("/tell",   "core.tell",   HandleTellCommand,   " - Used to send a private message")
-	PluginManager:BindCommand("/me",     "core.me",     HandleMeCommand,     " - ")
-	PluginManager:BindCommand("/spawn",  "core.spawn",  HandleSpawnCommand,  " - Command that returns you to the worlds spawn")
-	PluginManager:BindCommand("/reload", "core.reload", HandleReloadCommand, " - Command that reloads all the plugins")
-	PluginManager:BindCommand("/help",   "core.help",   HandleHelpCommand,   " - Shows the help menu")
+	PluginManager:BindCommand("/tell",           "core.tell",           HandleTellCommand,           " - Used to send a private message")
+	PluginManager:BindCommand("/me",             "core.me",             HandleMeCommand,             " - ")
+	PluginManager:BindCommand("/spawn",          "core.spawn",          HandleSpawnCommand,          " - Command that returns you to the worlds spawn")
+	PluginManager:BindCommand("/reload",         "core.reload",         HandleReloadCommand,         " - Command that reloads all the plugins")
+	PluginManager:BindCommand("/help",           "core.help",           HandleHelpCommand,           " - Shows the help menu")
+	PluginManager:BindCommand("/clear",          "core.clear",          HandleClearCommand,          " - Clears the inventory of the given playername")
+	PluginManager:BindCommand("/toggledownfall", "core.toggledownfall", HandleToggleDownfallCommand, " - Toggles the Weather")
+	PluginManager:BindCommand("/time",           "core.time",           HandleTimeCommand,           " - Change the time in the world you are currently in")
 	
 	local SettingsIni = cIniFile("Core.ini")
 	SettingsIni:ReadFile()
@@ -40,7 +43,9 @@ function HandleMeCommand(Split, Player)
 		Player:SendMessage("Usage /me [Message]")
 		return true
 	end
+	
 	local World = Player:GetWorld()
+	
 	table.remove(Split, 1)
 	World:BroadcastChat("* " .. Player:GetName() .. " " .. table.concat(Split, " "))
 	return true
@@ -51,7 +56,9 @@ function HandleTellCommand(Split, Player)
 		Player:SendMessage(GetMessageFailure("Usage /tell [Target Player] [Message]"))
 		return true
 	end
+	
 	if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+		-- Player is found. Remove /tell and the target player from Split and concat it.
 		table.remove(Split, 1)
 		table.remove(Split, 2)
 		TargetPlayer:SendMessage(GetMessageSucces(Player:GetName() .. " -> " .. "me " .. table.concat(Split)))
@@ -60,6 +67,8 @@ function HandleTellCommand(Split, Player)
 	end) then
 		return true
 	end
+	
+	-- No Player found
 	Player:SendMessage(GetMessageFailure("Player not found"))
 	return true
 end
@@ -106,5 +115,86 @@ function HandleHelpCommand(Split, Player)
 		Player:SendMessage(msg)
 	end
 
+	return true
+end
+
+function HandleClearCommand(Split, Player)
+	if #Split ~= 2 then
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /clear [Playername]"))
+		return true
+	end
+	
+	if cRoot:Get():FindAndDoWithPlayer(Split[2], function(OtherPlayer)
+		OtherPlayer:GetInventory():Clear()
+		OtherPlayer:SendMessage(GetMessageSucces(cChatColor.LightGray .. "Inventory cleared"))
+		Player:SendMessage(GetMessageSucces(cChatColor.LightGray .. "Player ".. OtherPlayer:GetName() .. "'s Inventory cleared"))
+		return true
+	end) then
+		return true
+	end
+	
+	Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Player not found"))
+	return true
+end
+
+function HandleToggleDownfallCommand(Split, Player)
+	if #Split ~= 1 then
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /toggledownfall"))
+		return true
+	end
+	local World = Player:GetWorld()
+	local Weather = World:GetWeather()
+	if Weather == eWeather_Sunny then
+		World:SetWeather(eWeather_Rain)
+	else
+		World:SetWeather(eWeather_Sunny)
+	end
+	
+	Player:SendMessage(GetMessage(cChatColor.LightGray .. "Toggled downfall"))
+	
+	return true
+end
+
+function HandleTimeCommand(Split, Player)
+	if #Split ~= 3 then
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /time Set|Add <number|day|night>"))
+		return true
+	end
+	
+	local World = Player:GetWorld()
+	Split[2] = string.upper(Split[2])
+	if tonumber(Split[3]) == nil then
+		Split[3] = string.upper(Split[3])
+	else
+		Split[3] = tonumber(Split[3])
+	end
+	
+	if Split[2] == "SET" then
+		if type(Split[3]) == 'number' then
+			World:SetTimeOfDay(Split[3])
+			Player:SendMessage(GetMessageSucces("Set the time to " .. Split[3]))
+			return true
+		elseif Split[3] == "DAY" then
+			World:SetTimeOfDay(1000)
+			Player:SendMessage(GetMessageSucces("Set the time to 1000"))
+			return true
+		elseif Split[3] == "NIGHT" then
+			World:SetTimeOfDay(12500)
+			Player:SendMessage(GetMessageSucces("Set the time to 12500"))
+			return true
+		end
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /time Set <number|day|night>"))
+		return true
+	elseif Split[2] == "ADD" then
+		if type(Split[3]) ~= 'number' then
+			Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /time Add <number>"))
+			return true
+		end
+		local NewTime = World:GetTimeOfDay() + Split[3]
+		World:SetTimeOfDay(NewTime)
+		Player:SendMessage(GetMessageSucces("Set the time to " .. NewTime))
+		return true
+	end
+	Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /time Set|Add <number|day|night>"))
 	return true
 end
