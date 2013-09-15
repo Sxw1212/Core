@@ -20,7 +20,9 @@ function Initialize(Plugin)
 	PluginManager:BindCommand("/kill",           "core.kill",           HandleKillCommand,           " - Kill a player")
 	PluginManager:BindCommand("/gamemode",       "core.gamemode",       HandleGamemodeCommand,       " - Change your or others gamemode")
 	PluginManager:BindCommand("/tp",             "core.teleport",       HandleTeleportCommand,       " - Teleport to a player or coordinates")
-	
+	PluginManager:BindCommand("/plugins",        "core.plugins",        HandlePluginsCommand,        " - Shows a list of all the plugins.")
+	PluginManager:BindCommand("/pl",             "core.plugins",        HandlePluginsCommand,        "")
+
 	local SettingsIni = cIniFile("Core.ini")
 	SettingsIni:ReadFile()
 	UsePrefix = SettingsIni:GetValueSetB("General", "UsePrefixes", false)
@@ -375,5 +377,18 @@ function HandleTeleportCommand(Split, Player)
 		end
 		Player:SendMessage(GetMessageFailure("Player not found"))
 		return true
+	else
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /tp [target player] <destination player> OR /tp [target player] <x> <y> <z>"))
+		return true
 	end
+end
+
+function HandlePluginsCommand(Split, Player)
+	local PluginList = PluginManager:GetAllPlugins()
+	local Table = {}
+	for I, k in pairs(PluginList) do
+		table.insert(Table, cChatColor.LightGreen .. I)
+	end
+	Player:SendMessage("Plugins (" .. #Table .. "): " .. table.concat(Table, cChatColor.White .. ", "))
+	return true
 end
