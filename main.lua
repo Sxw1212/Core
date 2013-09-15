@@ -19,6 +19,7 @@ function Initialize(Plugin)
 	PluginManager:BindCommand("/time",           "core.time",           HandleTimeCommand,           " - Change the time in the world you are currently in")
 	PluginManager:BindCommand("/kill",           "core.kill",           HandleKillCommand,           " - Kill a player")
 	PluginManager:BindCommand("/gamemode",       "core.gamemode",       HandleGamemodeCommand,       " - Change your or others gamemode")
+	PluginManager:BindCommand("/tp",             "core.teleport",       HandleTeleportCommand,       " - Teleport to a player or coordinates")
 	
 	local SettingsIni = cIniFile("Core.ini")
 	SettingsIni:ReadFile()
@@ -288,4 +289,91 @@ function HandleGamemodeCommand(Split, Player)
 	end
 	return true
 end
-		
+
+function HandleTeleportCommand(Split, Player)
+	if #Split == 2 then
+		if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+			Player:TeleportToEntity(TargetPlayer)
+			Player:SendMessage(GetMessageSucces(Player:GetName() .. " was teleported to " .. TargetPlayer:GetName()))
+			return true
+		end) then
+			return true
+		end
+		Player:SendMessage(GetMessageFailure("Player not found"))
+		return true
+	elseif #Split ==  3 then
+		if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+			if cRoot:Get():FindAndDoWithPlayer(Split[3], function(ToTeleport)
+				TargetPlayer:TeleportToEntity(ToTeleport)
+				Player:SendMessage(GetMessageSucces("Teleported " .. Split[2] .. " to " .. Split[3]))
+				return true
+			end) then
+				return true
+			end
+			Player:SendMessage(GetMessageFailure("Player " .. Split[3] .. " was not found"))
+			return true
+		end) then
+			return true
+		end
+		Player:SendMessage(GetMessageFailure("Player " .. Split[2] .. " was not found"))
+		return true
+	elseif #Split == 4 then
+		local X = tonumber(Split[2])
+		local Y = tonumber(Split[3])
+		local Z = tonumber(Split[4])
+		if X == nil or Y == nil or Z == nil then
+			Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /tp [target player] <destination player> OR /tp [target player] <x> <y> <z>"))
+			return true
+		end
+		local XInt, Xfractional = math.modf(X)
+		local YInt, Yfractional = math.modf(Y)
+		local ZInt, Zfractional = math.modf(Z)
+		if math.abs(Xfractional) == -0 then
+			Xfractional = 0.5
+		end
+		if math.abs(Yfractional) == -0 then
+			Yfractional = 0.5
+		end
+		if math.abs(Zfractional) == -0 then
+			Zfractional = 0.5
+		end
+		X = XInt + Xfractional
+		Y = YInt + Yfractional
+		Z = ZInt + Zfractional
+		Player:TeleportToCoords(X, Y, Z)
+		Player:SendMessage(GetMessageSucces("Teleported " .. Player:GetName() .. " to " .. X .. "," .. Y .. "," .. Z))
+		return true
+	elseif #Split == 5 then
+		local X = tonumber(Split[3])
+		local Y = tonumber(Split[4])
+		local Z = tonumber(Split[5])
+		if X == nil or Y == nil or Z == nil then
+			Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /tp [target player] <destination player> OR /tp [target player] <x> <y> <z>"))
+			return true
+		end
+		local XInt, Xfractional = math.modf(X)
+		local YInt, Yfractional = math.modf(Y)
+		local ZInt, Zfractional = math.modf(Z)
+		if math.abs(Xfractional) == -0 then
+			Xfractional = 0.5
+		end
+		if math.abs(Yfractional) == -0 then
+			Yfractional = 0.5
+		end
+		if math.abs(Zfractional) == -0 then
+			Zfractional = 0.5
+		end
+		X = XInt + Xfractional
+		Y = YInt + Yfractional
+		Z = ZInt + Zfractional
+		if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+			TargetPlayer:TeleportToCoords(X, Y, Z)
+			Player:SendMessage(GetMessageSucces("Teleported " .. Player:GetName() .. " to " .. X .. "," .. Y .. "," .. Z))
+			return true
+		end) then
+			return true
+		end
+		Player:SendMessage(GetMessageFailure("Player not found"))
+		return true
+	end
+end
