@@ -17,6 +17,8 @@ function Initialize(Plugin)
 	PluginManager:BindCommand("/clear",          "core.clear",          HandleClearCommand,          " - Clears the inventory of the given playername")
 	PluginManager:BindCommand("/toggledownfall", "core.toggledownfall", HandleToggleDownfallCommand, " - Toggles the Weather")
 	PluginManager:BindCommand("/time",           "core.time",           HandleTimeCommand,           " - Change the time in the world you are currently in")
+	PluginManager:BindCommand("/kill",           "core.kill",           HandleKillCommand,           " - Kill a player")
+	PluginManager:BindCommand("/gamemode",       "core.gamemode",       HandleGamemodeCommand,       " - Change your or others gamemode")
 	
 	local SettingsIni = cIniFile("Core.ini")
 	SettingsIni:ReadFile()
@@ -198,3 +200,92 @@ function HandleTimeCommand(Split, Player)
 	Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /time Set|Add <number|day|night>"))
 	return true
 end
+
+function HandleKillCommand(Split, Player)
+	if #Split ~= 2 then
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /kill [TargetPlayer]"))
+		return true
+	end
+	if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+		TargetPlayer:TakeDamage(dtAdmin, Player, 1000, 0)
+		TargetPlayer:SendMessage(GetMessageSucces("Ouch. That looks like it hurt."))
+		return true
+	end) then
+		return true
+	end
+	Player:SendMessage(GetMessageFailure("Player not found"))
+	return true
+end
+
+function HandleGamemodeCommand(Split, Player)
+	if #Split == 1 then
+		Player:SendMessage(GetMessageFailure("Usage: /gamemode <Player> [Gamemode]"))
+		return true
+	end
+	
+	if #Split == 3 then
+		if tonumber(Split[3]) == nil then
+			local Gamemode = string.upper(Split[3])
+			local GM = 0
+			if Gamemode == "SURVIVAL" then
+				GM = 0
+			elseif Gamemode == "CREATIVE" then
+				GM = 1
+			elseif Gamemode == "ADVENTURE" then
+				GM = 2
+			else
+				Player:SendMessage(GetMessageFailure("Usage: /gamemode <Player> [creative|survival|adventure]"))
+				return true
+			end
+			if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+				TargetPlayer:SetGameMode(GM)
+				Player:SendMessage(GetMessageSucces("Player " .. TargetPlayer:GetName() .. " has his gamemode set to " .. GM))
+				return true
+			end) then
+				return true
+			end
+			Player:SendMessage(GetMessageFailure("Player not found"))
+			return true
+		end
+		local Gamemode = tonumber(Split[3])
+		if ((Gamemode < 0) or (Gamemode > 2)) then
+			Player:SendMessage(GetMessageFailure("Usage: /gamemode <Player> [creative|survival|adventure]"))
+			return true
+		end
+		if cRoot:Get():FindAndDoWithPlayer(Split[2], function(TargetPlayer)
+			TargetPlayer:SetGameMode(Gamemode)
+			Player:SendMessage(GetMessageSucces("Player " .. TargetPlayer:GetName() .. " has his gamemode set to " .. Gamemode))
+			return true
+		end) then
+			return true
+		end
+		Player:SendMessage(GetMessageFailure("Player not found"))
+		return true
+	end
+	
+	if tonumber(Split[2]) == nil then
+		local Gamemode = string.upper(Split[2])
+		local GM = 0
+		if Gamemode == "SURVIVAL" then
+			GM = 0
+		elseif Gamemode == "CREATIVE" then
+			GM = 1
+		elseif Gamemode == "ADVENTURE" then
+			GM = 2
+		else
+			Player:SendMessage(GetMessageFailure("Usage: /gamemode [creative|survival|adventure]"))
+			return true
+		end
+		Player:SetGameMode(GM)
+		return true
+	else
+		local Gamemode = tonumber(Split[2])
+		if ((Gamemode < 0) or (Gamemode > 2)) then
+			Player:SendMessage(GetMessageFailure("Usage: /gamemode [creative|survival|adventure]"))
+			return true
+		end
+		Player:SetGameMode(Gamemode)
+	end
+	return true
+end
+		
