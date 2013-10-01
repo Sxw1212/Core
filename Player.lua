@@ -278,7 +278,7 @@ function HandleBanCommand(Split, Player)
 	return true
 end
 
-function HandleUnBanCommand(Split, Player)
+function HandlePardonCommand(Split, Player)
 	if #Split == 2 then
 		if not BanList:UnBanPlayer(Split[2]) then
 			Player:SendMessage("Player " .. Split[2] .. " already wasn't banned.")
