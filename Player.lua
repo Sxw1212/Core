@@ -1,6 +1,6 @@
 function HandleClearCommand(Split, Player)
 	if #Split ~= 2 then
-		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /clear [Playername]"))
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /clear [playername]"))
 		return true
 	end
 	
@@ -21,7 +21,7 @@ end
 
 function HandleKillCommand(Split, Player)
 	if #Split ~= 2 then
-		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /kill [TargetPlayer]"))
+		Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "Usage: /kill [targetplayer]"))
 		return true
 	end
 	
@@ -39,7 +39,7 @@ end
 
 function HandleGamemodeCommand(Split, Player)
 	if #Split == 1 then
-		Player:SendMessage(GetMessageFailure("Usage: /gamemode <Player> [Gamemode]"))
+		Player:SendMessage(GetMessageFailure("Usage: /gamemode <player> [gamemode]"))
 		return true
 	end
 	
@@ -252,18 +252,18 @@ function HandleBanCommand(Split, Player)
 	if #Split == 2 then
 		local TargetPlayer = Split[2]
 		if not BanList:BanPlayer(TargetPlayer) then
-			Player:SendMessage("Player " .. TargetPlayer .. " is already banned")
+			Player:SendMessage(GetMessageFailure("Player " .. TargetPlayer .. " is already banned"))
 			return true
 		end
 		cRoot:Get():FindAndDoWithPlayer(TargetPlayer, function(OtherPlayer)
 			OtherPlayer:GetClientHandle():Kick("You are banned")
 		end)
-		Player:SendMessage("Banned player " .. TargetPlayer)
+		Player:SendMessage(GetMessageSucces("Banned player " .. TargetPlayer))
 		return true
 	elseif #Split > 2 then
 		local TargetPlayer = Split[2]
 		if not BanList:BanPlayer(TargetPlayer) then
-			Player:SendMessage("Player " .. TargetPlayer .. " is already banned")
+			Player:SendMessage(GetMessageFailure("Player " .. TargetPlayer .. " is already banned"))
 			return true
 		end
 		cRoot:Get():FindAndDoWithPlayer(TargetPlayer, function(OtherPlayer)
@@ -271,21 +271,21 @@ function HandleBanCommand(Split, Player)
 			table.remove(Split, 1)
 			OtherPlayer:GetClientHandle():Kick(table.concat(Split, " "))
 		end)
-		Player:SendMessage("Banned player " .. TargetPlayer)
+		Player:SendMessage(GetMessageSucces("Banned player " .. TargetPlayer))
 		return true
 	end
-	Player:SendMessage(cChatColor.Rose .. "usage: /ban <name> [reason]")
+	Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "usage: /ban <name> [reason]"))
 	return true
 end
 
 function HandlePardonCommand(Split, Player)
 	if #Split == 2 then
 		if not BanList:UnBanPlayer(Split[2]) then
-			Player:SendMessage("Player " .. Split[2] .. " already wasn't banned.")
+			Player:SendMessage(GetMessageFailure("Player " .. Split[2] .. " already wasn't banned."))
 			return true
 		end
-		Player:SendMessage("Unbanned player " .. Split[2])
+		Player:SendMessage(GetMessageFailure("Unbanned player " .. Split[2]))
 		return true
 	end
-	Player:SendMessage(cChatColor.Rose .. "usage: /pardon <name> ")
+	Player:SendMessage(GetMessageFailure(cChatColor.Rose .. "usage: /pardon <name> "))
 end

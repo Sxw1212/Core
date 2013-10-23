@@ -5,7 +5,7 @@ PLUGIN = nil
 function Initialize(Plugin)
 	PLUGIN = Plugin
 	
-	Plugin:SetName("Core")
+	Plugin:SetName("Core+")
 	Plugin:SetVersion(1)
 	
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_JOINED, OnPlayerJoined)
@@ -35,6 +35,9 @@ function Initialize(Plugin)
 	
 	BanList = LoadBans()
 	WhiteList = LoadWhiteList()
+	
+	Plugin:AddWebTab("Manage Plugins", WebAdmin_Manage_Plugins)
+	LOG("Initialized " .. Plugin:GetName() .. " v." .. Plugin:GetVersion())
 	return true
 end
 

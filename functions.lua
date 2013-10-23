@@ -122,6 +122,70 @@ function LoadWhiteList()
 		end
 		return false
 	end
-	
 	return Object
+end
+
+function table.contains(Table, SearchFor)
+	for I, k in pairs(Table) do
+		if k == SearchFor then
+			return true
+		end
+	end
+	return false
+end
+
+function DisablePlugin(PluginName, SettingsIni)
+	if PluginName == nil or SettingsIni == nil then
+		return false
+	end
+	local PM = cRoot:Get():GetPluginManager()
+	PM:DisablePlugin(PluginName)
+	RemovePlugin(PluginName, SettingsIni)
+	return true
+end
+
+function EnablePlugin(PluginName, SettingsIni)
+	if PluginName == nil or SettingsIni == nil then
+		return false
+	end
+	local PM = cRoot:Get():GetPluginManager()
+	if IniFileContains(SettingsIni, "Plugins", PluginName) then
+		return false
+	end
+	PM:LoadPlugin(PluginName)
+	SettingsIni:SetValue("Plugins", "Plugin", PluginName)
+	SettingsIni:WriteFile()
+	return true
+end
+
+function RemovePlugin(PluginName, SettingsIni)
+	if PluginName == nil or SettingsIni == nil then
+		return false
+	end
+	local PM = cRoot:Get():GetPluginManager()
+	if IniFileContains(SettingsIni, "Plugins", PluginName) then
+		return false
+	end
+	local PluginsKeyID = SettingsIni:FindKey("Plugins")
+	local PluginID = 0
+	for I=1, SettingsIni:NumValues("Plugins") do
+		local PluginNameFromIni = SettingsIni:GetValue(PluginsKeyID, I)
+		if PluginNameFromIni == PluginName and PluginNameFromIni ~= "" then
+			PluginID = I
+			break
+		end
+	end
+	SettingsIni:DeleteValueByID(PluginsKeyID, PluginID)
+	SettingsIni:WriteFile()
+	return true
+end
+
+function IniFileContains(SettingsIni, Key, Value)
+	for I=1, SettingsIni:NumValues(Key) do
+		local PluginNameFromIni = SettingsIni:GetValue(PluginsKeyID, I)
+		if PluginNameFromIni == Value and PluginNameFromIni ~= "" then
+			return true
+		end
+	end
+	return false
 end
