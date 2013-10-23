@@ -9,6 +9,7 @@ function Initialize(Plugin)
 	Plugin:SetVersion(1)
 	
 	cPluginManager.AddHook(cPluginManager.HOOK_PLAYER_JOINED, OnPlayerJoined)
+	cPluginManager.AddHook(cPluginManager.HOOK_CHAT, OnChat)
 	
 	PluginManager = cRoot:Get():GetPluginManager()
 	PluginManager:BindCommand("/tell",           "core.tell",           HandleTellCommand,           " - Used to send a private message")
@@ -37,6 +38,7 @@ function Initialize(Plugin)
 	WhiteList = LoadWhiteList()
 	
 	Plugin:AddWebTab("Manage Plugins", WebAdmin_Manage_Plugins)
+	Plugin:AddWebTab("Chat", WebAdmin_Chat)
 	LOG("Initialized " .. Plugin:GetName() .. " v." .. Plugin:GetVersion())
 	return true
 end

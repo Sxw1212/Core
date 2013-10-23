@@ -8,3 +8,7 @@ function OnPlayerJoined(Player)
 		return true
 	end
 end
+
+function OnChat(Player, Message)
+	AddMessage(Player:GetName() .. ": " .. Message)
+end	
