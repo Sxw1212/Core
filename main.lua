@@ -39,6 +39,7 @@ function Initialize(Plugin)
 	
 	Plugin:AddWebTab("Manage Plugins", WebAdmin_Manage_Plugins)
 	Plugin:AddWebTab("Chat", WebAdmin_Chat)
+	Plugin:AddWebTab("Playerlist", WebAdmin_PlayerList)
 	LOG("Initialized " .. Plugin:GetName() .. " v." .. Plugin:GetVersion())
 	return true
 end
@@ -46,4 +47,5 @@ end
 function OnDisable()
 	BanList:SavePlayerList()
 	BanList:SaveIPList()
+	WhiteList:Save()
 end

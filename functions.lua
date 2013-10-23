@@ -122,13 +122,37 @@ function LoadWhiteList()
 		end
 		return false
 	end
+	
+	function Object:AddPlayer(PlayerName)
+		if Table[PlayerName] then
+			return false
+		end
+		Table[PlayerName] = true
+		return true
+	end
+	
+	function Object:RemovePlayer(PlayerName)
+		if Table[PlayerName] then
+			Table[PlayerName] = nil
+			return true
+		end
+		return false
+	end
+	
+	function Object:Save()
+		local File = io.open("white-list.txt", "w")
+		for I, k in pairs(Table) do
+			File:write(I)
+		end
+		File:close()
+	end
 	return Object
 end
 
 function table.contains(Table, SearchFor)
 	for I, k in pairs(Table) do
 		if k == SearchFor then
-			return true
+			return true, I
 		end
 	end
 	return false
@@ -188,4 +212,16 @@ function IniFileContains(SettingsIni, Key, Value)
 		end
 	end
 	return false
+end
+
+function table.removevalue(Table, value)
+	if Table == nil or value == nil then
+		return false
+	end
+	for I, k in pairs(Table) do
+		if k == value then
+			Table[I] = nil
+			return Table
+		end
+	end
 end
