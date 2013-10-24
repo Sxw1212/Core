@@ -86,7 +86,7 @@ function WebAdmin_Manage_Plugins(Request)
 	table.sort(ErrorPlugins)
 	table.sort(DisabledPlugins)
 
-	Content = Content .. [[<h4>Active plugins</h4><p>These plugins are currently active</p>
+	Content = Content .. [[<h4>Active plugins</h4><p>These plugins have been successfully initialized and are currently running.</p>
 		<table style=\"background-color: #efffef\">]]
 	
 	for I, Name in pairs(ActivatedPlugins) do
@@ -110,7 +110,7 @@ function WebAdmin_Manage_Plugins(Request)
 	end
 	
 	if #ErrorPlugins ~= 0 then
-		Content = Content .. [[</table><h4>Errors</h4><p>These plugins are configured to run, but encountered a problem during their initialization. MCServer disabled them temporarily and will try reloading them.</p><table>]]
+		Content = Content .. [[</table><br /><hr /><h4>Errors</h4><p>These plugins are configured to run, but encountered a problem during their initialization. MCServer disabled them temporarily and will try reloading them.</p><table>]]
 		for I, Name in pairs(ErrorPlugins) do
 			Content = Content .. "<tr>"
 			Content = Content .. "<td width=\"100%\" style=\"background-color: #ffefef\">" .. Name .. "</td>"
@@ -120,7 +120,7 @@ function WebAdmin_Manage_Plugins(Request)
 	end
 	
 	if #DisabledPlugins ~= 0 then
-		Content = Content .. [[</table><h4>Disabled plugins</h4>
+		Content = Content .. [[</table><br /><hr /><h4>Disabled plugins</h4>
 		<p>These plugins are installed, but are disabled in the configuration</p>
 		<table>]]
 		for I, Name in pairs(DisabledPlugins) do
