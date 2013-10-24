@@ -37,9 +37,9 @@ function Initialize(Plugin)
 	BanList = LoadBans()
 	WhiteList = LoadWhiteList()
 	
-	Plugin:AddWebTab("Manage Plugins", WebAdmin_Manage_Plugins)
-	Plugin:AddWebTab("Chat", WebAdmin_Chat)
-	Plugin:AddWebTab("Playerlist", WebAdmin_PlayerList)
+	Plugin:AddWebTab("Plugins", WebAdmin_Manage_Plugins)
+	Plugin:AddWebTab("Chat",    WebAdmin_Chat)
+	Plugin:AddWebTab("Players", WebAdmin_PlayerList)
 	LOG("Initialized " .. Plugin:GetName() .. " v." .. Plugin:GetVersion())
 	return true
 end
