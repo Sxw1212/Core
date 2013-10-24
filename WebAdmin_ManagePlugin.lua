@@ -1,3 +1,5 @@
+NeedsReload = false
+
 function WebAdmin_Manage_Plugins(Request)
 	local Content = ""
 	local SettingsIni = cIniFile("settings.ini")
@@ -39,7 +41,7 @@ function WebAdmin_Manage_Plugins(Request)
 				SettingsIni:SetValue("Plugins", "Plugin", k)
 			end
 			SettingsIni:WriteFile()
-			PluginManager:ReloadPlugins()
+			NeedsReload = true
 		elseif (Request.PostParams["Move_DOWN"] ~= nil) then
 			local Exist, ID = table.contains(InSettingsIni, Request.PostParams["Move_DOWN"])
 			InSettingsIni[ID + 1], InSettingsIni[ID] = InSettingsIni[ID], InSettingsIni[ID + 1] -- Swap the plugins in the table.
@@ -48,26 +50,25 @@ function WebAdmin_Manage_Plugins(Request)
 				SettingsIni:SetValue("Plugins", "Plugin", k)
 			end
 			SettingsIni:WriteFile()
-			PluginManager:ReloadPlugins()
+			NeedsReload = true
 		end
 	end
-		
+	
+	-- We store it if there were changes otherwise the apply button would disappear when disabling/enabling an plugin.
+	if NeedsReload then
+		Content = Content .. [[<form method='POST'>Apply the changes: <input type='submit' name='reload' value='Apply!'></form>]]
+	end
+	
 	Content = Content .. [[<h4>Currently installed plugins</h4>
 		<table>]]
 
 	PluginManager:FindPlugins()
 	local PluginList = PluginManager:GetAllPlugins()
-	Content = Content .. [[
-	<tr>
-		<td>Plugin</td>
-		<td>State</td>
-		<td>Interactions</td>
-		<td>Move Up</td>
-		<td>Move Down</td>
-	</tr>]]
+	
 	local ActivatedPlugins = InSettingsIni
 	local ErrorPlugins = {}
 	local DisabledPlugins = {}
+	
 	for Name, Plugin in pairs(PluginList) do
 		if Plugin then
 			-- We can't insert the plugin in a table because it would not be sorted in the order the plugins get loaded.
@@ -88,36 +89,48 @@ function WebAdmin_Manage_Plugins(Request)
 	table.sort(ErrorPlugins)
 	table.sort(DisabledPlugins)
 	
+	Content = Content .. "<th colspan='5'>Activated Plugins</th>"
 	for I, Name in pairs(ActivatedPlugins) do
 		Content = Content .. "<tr>"
 		Content = Content .. "<td>" .. Name .. "</td>"
 		Content = Content .. '<td><b style="color: green;">Enabled</b>'
 		Content = Content .. '<td><form method="POST"><input type="hidden" name="PluginName" value="'.. Name ..'"><input type="submit" name="DisablePlugin" value="Disable"></form></td>'
-		Content = Content .. '<td><form method="POST"><input type="hidden" name="Move_UP" value="' .. Name .. '"><input type="submit" name="Move" value="Move Up"></form></td>'
-		Content = Content .. '<td><form method="POST"><input type="hidden" name="Move_DOWN" value="' .. Name .. '"><input type="submit" name="Move" value="Move Down"></form></td>'
+		if InSettingsIni[1] == Name then
+			Content = Content .. '<td><button type="button" disabled>Move Up</button> </td>'
+		else
+			Content = Content .. '<td><form method="POST"><input type="hidden" name="Move_UP" value="' .. Name .. '"><input type="submit" name="Move" value="Move Up"></form></td>'
+		end
+		if InSettingsIni[#InSettingsIni] == Name then
+			Content = Content .. '<td><button type="button" disabled>Move Down</button> </td>'
+		else
+			Content = Content .. '<td><form method="POST"><input type="hidden" name="Move_DOWN" value="' .. Name .. '"><input type="submit" name="Move" value="Move Down"></form></td>'
+		end
+		
 		Content = Content .. "<tr>"
 	end
-	for I, Name in pairs(ErrorPlugins) do
-		Content = Content .. "<tr>"
-		Content = Content .. "<td>" .. Name .. "</td>"
-		Content = Content .. '<td><b style="color: red;">Error</b>'
-		Content = Content .. "<td><form method='POST'><input type='hidden' name='PluginName' value='"..Name.."'><input type='submit' name='RemovePlugin' value='Remove'></form></td>"
-		Content = Content .. '<td></td>'
-		Content = Content .. '<td></td>'
-		Content = Content .. "<tr>"
+	if #ErrorPlugins ~= 0 then
+		Content = Content .. [[</table><br /><table> <th colspan=3>Error</th>]]
+		for I, Name in pairs(ErrorPlugins) do
+			Content = Content .. "<tr>"
+			Content = Content .. "<td>" .. Name .. "</td>"
+			Content = Content .. '<td><b style="color: red;">Error</b>'
+			Content = Content .. "<td><form method='POST'><input type='hidden' name='PluginName' value='"..Name.."'><input type='submit' name='RemovePlugin' value='Remove'></form></td>"
+			Content = Content .. "<tr>"
+		end
 	end
-	for I, Name in pairs(DisabledPlugins) do
-		Content = Content .. "<tr>"
-		Content = Content .. "<td>" .. Name .. "</td>"
-		Content = Content .. '<td><b style="color: Orange;">Disabled</b>'
-		Content = Content .. '<td><form method="POST"><input type="hidden" name="PluginName" value="'.. Name ..'"><input type="submit" name="EnablePlugin" value="Enable"></form></td>'
-		Content = Content .. '<td></td>'
-		Content = Content .. '<td></td>'
-		Content = Content .. "<tr>"	
+	if #DisabledPlugins ~= 0 then
+	Content = Content .. [[</table><br /><table> <th colspan=3>Disabled Plugins</th>]]
+		for I, Name in pairs(DisabledPlugins) do
+			Content = Content .. "<tr>"
+			Content = Content .. "<td>" .. Name .. "</td>"
+			Content = Content .. '<td><b style="color: Orange;">Disabled</b>'
+			Content = Content .. '<td><form method="POST"><input type="hidden" name="PluginName" value="'.. Name ..'"><input type="submit" name="EnablePlugin" value="Enable"></form></td>'
+			Content = Content .. "<tr>"	
+		end
 	end
-	Content = Content .. "</table>"
 	
-	Content = Content .. [[<h4>Reload</h4>
+	Content = Content .. [[</table>
+	<h4>Reload</h4>
 	<form method='POST'>
 	<p>Click the reload button to reload all plugins according to <strong>settings.ini</strong>!
 	<input type='submit' name='reload' value='Reload!'></p>
