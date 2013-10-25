@@ -59,9 +59,6 @@ function WebAdmin_Manage_Plugins(Request)
 		Content = Content .. [[<form method='POST'>Apply the changes: <input type='submit' name='reload' value='Apply!'></form>]]
 	end
 	
-	Content = Content .. [[<h4>Currently installed plugins</h4>
-		<table>]]
-
 	PluginManager:FindPlugins()
 	local PluginList = PluginManager:GetAllPlugins()
 	
@@ -79,51 +76,56 @@ function WebAdmin_Manage_Plugins(Request)
 		end
 	end
 	
+	table.sort(ErrorPlugins)
+	table.sort(DisabledPlugins)
+
 	-- Remove plugins that are not loaded because something went wrong while loading the plugin.
 	for I, k in pairs(ActivatedPlugins) do
 		if not PluginManager:GetPlugin(k) then
-			table.remove(ActivatedPlugins, I)
+			ActivatedPlugins[I] = nil -- If we use table.remove the values get editted while we are reading it.
 		end
 	end
 
-	table.sort(ErrorPlugins)
-	table.sort(DisabledPlugins)
+	Content = Content .. [[<h4>Active plugins</h4><p>These plugins have been successfully initialized and are currently running.</p>
+		<table style=\"background-color: #efffef\">]]
 	
-	Content = Content .. "<th colspan='5'>Activated Plugins</th>"
 	for I, Name in pairs(ActivatedPlugins) do
 		Content = Content .. "<tr>"
-		Content = Content .. "<td>" .. Name .. "</td>"
-		Content = Content .. '<td><b style="color: green;">Enabled</b>'
-		Content = Content .. '<td><form method="POST"><input type="hidden" name="PluginName" value="'.. Name ..'"><input type="submit" name="DisablePlugin" value="Disable"></form></td>'
+		Content = Content .. "<td width=\"100%\" style=\"background-color: #efffef\">" .. Name .. "</td>"
+
 		if InSettingsIni[1] == Name then
-			Content = Content .. '<td><button type="button" disabled>Move Up</button> </td>'
+			Content = Content .. '<td style=\"background-color: #efffef\"><button type="button" disabled>Move Up</button> </td>'
 		else
-			Content = Content .. '<td><form method="POST"><input type="hidden" name="Move_UP" value="' .. Name .. '"><input type="submit" name="Move" value="Move Up"></form></td>'
+			Content = Content .. '<td style=\"background-color: #efffef\"><form method="POST"><input type="hidden" name="Move_UP" value="' .. Name .. '"><input type="submit" name="Move" value="Move Up"></form></td>'
 		end
+
 		if InSettingsIni[#InSettingsIni] == Name then
-			Content = Content .. '<td><button type="button" disabled>Move Down</button> </td>'
+			Content = Content .. '<td style=\"background-color: #efffef\"><button type="button" disabled>Move Down</button> </td>'
 		else
-			Content = Content .. '<td><form method="POST"><input type="hidden" name="Move_DOWN" value="' .. Name .. '"><input type="submit" name="Move" value="Move Down"></form></td>'
+			Content = Content .. '<td style=\"background-color: #efffef\"><form method="POST"><input type="hidden" name="Move_DOWN" value="' .. Name .. '"><input type="submit" name="Move" value="Move Down"></form></td>'
 		end
-		
+
+		Content = Content .. '<td style=\"background-color: #efffef\"><form method="POST"><input type="hidden" name="PluginName" value="'.. Name ..'"><input type="submit" name="DisablePlugin" value="Disable"></form></td>'
 		Content = Content .. "<tr>"
 	end
+	
 	if #ErrorPlugins ~= 0 then
-		Content = Content .. [[</table><br /><table> <th colspan=3>Error</th>]]
+		Content = Content .. [[</table><br /><hr /><h4>Errors</h4><p>These plugins are configured to run, but encountered a problem during their initialization. MCServer disabled them temporarily and will try reloading them.</p><table>]]
 		for I, Name in pairs(ErrorPlugins) do
 			Content = Content .. "<tr>"
-			Content = Content .. "<td>" .. Name .. "</td>"
-			Content = Content .. '<td><b style="color: red;">Error</b>'
-			Content = Content .. "<td><form method='POST'><input type='hidden' name='PluginName' value='"..Name.."'><input type='submit' name='RemovePlugin' value='Remove'></form></td>"
+			Content = Content .. "<td width=\"100%\" style=\"background-color: #ffefef\">" .. Name .. "</td>"
+			Content = Content .. "<td style=\"background-color: #ffefef\"><form method='POST'><input type='hidden' name='PluginName' value='"..Name.."'><input type='submit' name='RemovePlugin' value='Disable'></form></td>"
 			Content = Content .. "<tr>"
 		end
 	end
+	
 	if #DisabledPlugins ~= 0 then
-	Content = Content .. [[</table><br /><table> <th colspan=3>Disabled Plugins</th>]]
+		Content = Content .. [[</table><br /><hr /><h4>Disabled plugins</h4>
+		<p>These plugins are installed, but are disabled in the configuration</p>
+		<table>]]
 		for I, Name in pairs(DisabledPlugins) do
 			Content = Content .. "<tr>"
-			Content = Content .. "<td>" .. Name .. "</td>"
-			Content = Content .. '<td><b style="color: Orange;">Disabled</b>'
+			Content = Content .. "<td width=\"100%\">" .. Name .. "</td>"
 			Content = Content .. '<td><form method="POST"><input type="hidden" name="PluginName" value="'.. Name ..'"><input type="submit" name="EnablePlugin" value="Enable"></form></td>'
 			Content = Content .. "<tr>"	
 		end
