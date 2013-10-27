@@ -29,10 +29,10 @@ function Initialize(Plugin)
 	PluginManager:BindCommand("/ban",            "core.ban",            HandleBanCommand,            " - Ban a certain player from the server.")
 	PluginManager:BindCommand("/pardon",         "core.pardon",         HandlePardonCommand,         " - Pardon a certain player from the server.")
 
-	local SettingsIni = cIniFile("Core.ini")
-	SettingsIni:ReadFile()
+	local SettingsIni = cIniFile()
+	SettingsIni:ReadFile("Core.ini")
 	UsePrefix = SettingsIni:GetValueSetB("General", "UsePrefixes", false)
-	SettingsIni:WriteFile()
+	SettingsIni:WriteFile("Core.ini")
 	
 	BanList = LoadBans()
 	WhiteList = LoadWhiteList()

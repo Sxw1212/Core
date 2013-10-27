@@ -2,8 +2,8 @@ NeedsReload = false
 
 function WebAdmin_Manage_Plugins(Request)
 	local Content = ""
-	local SettingsIni = cIniFile("settings.ini")
-	SettingsIni:ReadFile()
+	local SettingsIni = cIniFile()
+	SettingsIni:ReadFile("settings.ini")
 		
 	if (Request.PostParams["reload"] ~= nil) then
 		Content = Content .. "<head><meta http-equiv=\"refresh\" content=\"2;\"></head>"
@@ -40,7 +40,7 @@ function WebAdmin_Manage_Plugins(Request)
 			for I, k in pairs(InSettingsIni) do
 				SettingsIni:SetValue("Plugins", "Plugin", k)
 			end
-			SettingsIni:WriteFile()
+			SettingsIni:WriteFile("settings.ini")
 			NeedsReload = true
 		elseif (Request.PostParams["Move_DOWN"] ~= nil) then
 			local Exist, ID = table.contains(InSettingsIni, Request.PostParams["Move_DOWN"])
@@ -49,7 +49,7 @@ function WebAdmin_Manage_Plugins(Request)
 			for I, k in pairs(InSettingsIni) do
 				SettingsIni:SetValue("Plugins", "Plugin", k)
 			end
-			SettingsIni:WriteFile()
+			SettingsIni:WriteFile("settings.ini")
 			NeedsReload = true
 		end
 	end
